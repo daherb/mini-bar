@@ -2,20 +2,20 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
 
 
   lincat
-    -- Utt = {s : Str} ;
-    -- Adv = Adverb ;
-    -- Pol = {s : Str ; b : Bool} ;
+    Utt = {s : Str} ;
+    Adv = Adverb ;
+    Pol = {s : Str ; b : Bool} ;
     
-    -- S  = {s : Str} ;
-    -- Cl = {s : Bool => Str} ;
-    -- VP = {verb : GVerb ; compl : Str} ;
-    -- AP = Adjective ;
-    -- CN = Noun ;
-    -- NP = {s : Case => Str ; a : Agreement} ;
-    Pron = {s : Case => Str ; a : Agreement} ;
-    -- Det = {s : Str ; n : Number} ;
-    -- Conj = {s : Str} ;
-    -- Prep = {s : Str} ;
+    S  = {s : Str} ;
+    Cl = {s : Bool => Str} ;
+    VP = {verb : GVerb ; compl : Str} ;
+    AP = Adjective ;
+    CN = Noun ;
+    NP = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
+    Pron = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
+    Det = {s : Gender => Case => Str ; n : Number } ;
+    Conj = {s : Str} ;
+    Prep = {s : Str} ;
     V = Verb ;
     V2 = Verb2 ;
     A = Adjective ;
@@ -23,12 +23,14 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     PN = ProperName ;
 
   lin
-    -- UttS s = s ;
-    -- UttNP np = {s = np.s ! Acc} ;
+    UttS s = s ;
 
-    -- UsePresCl pol cl = {
-    --   s = pol.s ++ cl.s ! pol.b
-    --   } ;
+    UttNP np = {s = np.s ! Acc} ;
+
+    UsePresCl pol cl = {
+      s = pol.s ++ cl.s ! pol.b
+      } ;
+    
     -- PredVP np vp = {
     --   s = \\b =>
     --        np.s ! Nom 
@@ -44,91 +46,153 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     -- 	    }
     --     ++ vp.compl ;
     --   } ;
-      
-    -- UseV v = {
-    --   verb = verb2gverb v ;
-    --   compl = []
-    --   } ;
-    -- ComplV2 v2 np = {
-    --   verb = verb2gverb v2 ;
-    --   compl = v2.c ++ np.s ! Acc
-    --   } ;
-    -- UseAP ap = {
-    --   verb = be_GVerb ;
-    --   compl = ap.s
-    --   } ;
-    -- AdvVP vp adv =
-    --   vp ** {compl = vp.compl ++ adv.s} ;
-      
-    -- DetCN det cn = {
-    --   s = table {c => det.s ++ cn.s ! det.n} ;
-    --   a = Agr det.n Per3
-    --   } ;
-    -- UsePN pn = {
-    --   s = \\_ => pn.s ;
-    --   a = Agr Sg Per3
-    --   } ;
-    -- UsePron p =
-    --   p ;
-    -- MassNP cn = {
-    --   s = \\_ => cn.s ! Sg ;
-    --   a = Agr Sg Per3
-    --   } ;
-    -- a_Det = {s = "a" ; n = Sg} ;
-    -- aPl_Det = {s = "" ; n = Pl} ;
-    -- the_Det = {s = "the" ; n = Sg} ;
-    -- thePl_Det = {s = "the" ; n = Pl} ;
-    -- UseN n =
-    --   n ;
-    -- AdjCN ap cn = {
-    --   s = table {n => ap.s ++ cn.s ! n}
-    --   } ;
 
-    -- PositA a = a ;
-
-    -- PrepNP prep np = {s = prep.s ++ np.s ! Acc} ;
-
-    -- CoordS conj a b = {s = a.s ++ conj.s ++ b.s} ;
+    PredVP np vp =
+      { s = \\b 
+	  => np.s ! Nom ++ vp.verb.s ! Pres np.n np.p ++ vp.compl ++ case b of { True => "" ; False => "ned" } ;
+      } ;
     
-    -- PPos  = {s = [] ; b = True} ;
-    -- PNeg  = {s = [] ; b = False} ;
+    UseV v = {
+      verb = verb2gverb v ;
+      compl = []
+      } ;
+    
+    ComplV2 v2 np = {
+      verb = verb2gverb v2 ;
+       compl = v2.c ++ np.s ! Acc
+      } ;
+    
+    UseAP ap = {
+      verb = be_GVerb ;
+      compl = ap.base
+      } ;
+    
+    AdvVP vp adv =
+      vp ** {compl = adv.s ++ vp.compl} ;
+      
+    DetCN det cn = {
+      s = \\c => det.s ! cn.g ! c ++ cn.s ! det.n ! c;
+      g = cn.g ;
+      n = det.n ;
+      p = P3
+      } ;
+    
+    UsePN pn = {
+       s = \\c => case pn.g of { Fem | Masc => the_Det.s ! pn.g ! c ; Neutr => "" } ++ pn.s ;
+       g = pn.g ;
+       n = Sg ;
+       p = P3
+       } ;
 
-    -- and_Conj = {s = "and"} ;
-    -- or_Conj = {s = "or"} ;
+    UsePron p =
+      p ;
+    
+    MassNP cn = {
+      s = \\c => cn.s ! Sg ! c;
+      g = cn.g ;
+      n = Sg ;
+      p = P3
+      } ;
+    
+    a_Det = {s = \\g,c => case <g,c> of {
+	       <_,Nom> => "a" ;
+	       <Masc|Neutr,Dat> => "an" ;
+	       <Fem,Dat> => "ara" ;
+	       <Masc,Acc> => "an" ;
+	       <Fem|Neutr,Acc> => "a"		
+	       }; n = Sg} ;
+    aPl_Det = {s = \\_,_ => "" ; n = Pl} ;
+    the_Det = {s = table { Masc => table { Nom => "da"; Dat => "am" ; Acc => "an" } ;
+			   Fem => table { Nom => "d" ; Dat => "da" ; Acc => "d" } ;
+			   Neutr => table { Nom => "as" ; Dat => "am" ; Acc => "as" }
+		 } ; n = Sg} ;
+    thePl_Det = {s = \\_ => table { Nom => "d" ; Dat => "de" ; Acc => "d" } ; n = Pl} ;
+    UseN n =
+      n ;
 
-    -- every_Det = {s = "every" ; n = Sg} ;
+    AdjCN ap cn = {
+      s = \\n,c => ap.s ! cn.g ! n ! c ++ cn.s ! n ! c ;
+      g = cn.g
+      } ;
 
-    in_Prep = {s = "in"} ;
-    on_Prep = {s = "on"} ;
-    with_Prep = {s = "with"} ;
+    PositA a = a ;
+
+    PrepNP prep np = {s = prep.s ++ np.s ! Acc} ;
+
+    CoordS conj a b = {s = a.s ++ conj.s ++ b.s} ;
+    
+    PPos  = {s = [] ; b = True} ;
+    PNeg  = {s = [] ; b = False} ;
+
+    and_Conj = {s = "und"} ;
+
+    or_Conj = {s = "oda"} ;
+
+    every_Det = {s = table { Masc => table { Nom => "jeda" ; Dat => "jem" ; Acc => "jedn" } ;
+			     Fem => table { Nom => "jede" ;  Dat => "jeda" ; Acc => "jede" } ;
+			     Neutr => table { Nom => "jeds" ; Dat => "jem" ; Acc => "jeds" }
+		   }; n = Sg} ;
+
+    in_Prep = {s = "i"} ;
+
+    on_Prep = {s = "aufm"} ;
+
+    with_Prep = {s = "mid"} ;
 
     i_Pron = {
-      s = table {Nom => "I" ; Acc => "me"} ;
-      a = Agr Sg Per1
+      s = table {Nom => "i" ; Dat => "mia" ; Acc => "mi" } ;
+      gen = "meina" ;
+      g = Fem | Masc ;
+      n = Sg ;
+      p = P1
       } ;
+    
     youSg_Pron = {
-      s = \\_ => "you" ;
-      a = Agr Sg Per2
+      s = table {Nom => "du" ; Dat => "dia" ; Acc => "di" } ;
+      gen = "deina" ;
+      g = Fem | Masc ;
+      n = Sg ;
+      p = P2 
       } ;
+    
     he_Pron = {
-      s = table {Nom => "he" ; Acc => "him"} ;
-      a = Agr Sg Per3
+      s = table {Nom => "ea" ; Dat => "eahm" ; Acc => "eahm" } ;
+      gen = "seina" ;
+      g = Masc ;
+      n = Sg ;
+      p = P3 
       } ;
+    
     she_Pron = {
-      s = table {Nom => "she" ; Acc => "her"} ;
-      a = Agr Sg Per3
+      s = table {Nom => "sie" ; Dat => "iara" ; Acc => "sie" } ;
+      gen = "iara" ;
+      g = Fem ;
+      n = Sg ;
+      p = P3 
       } ;
+    
     we_Pron = {
-      s = table {Nom => "we" ; Acc => "us"} ;
-      a = Agr Pl Per1
+      s = table {Nom => "mia" ; Dat => "uns" ; Acc => "uns"} ;
+      gen = "unsa" ; 
+      g = Fem | Masc ;
+      n = Pl ;
+      p = P1 
       } ;
+    
     youPl_Pron = {
-      s = \\_ => "you" ;
-      a = Agr Pl Per2
+      s = table {Nom => "ia" ; Dat => "eich" ; Acc => "eich"} ;
+      gen = "eia" ; 
+      g = Fem | Masc ;
+      n = Pl ;
+      p = P2
       } ;
+    
     they_Pron = {
-      s = table {Nom => "they" ; Acc => "them"} ;
-      a = Agr Pl Per2
+      s = table {Nom => "de" ; Dat => "eahna" ; Acc => "de"} ;
+      gen = "eahna" ;
+      g = Fem | Masc ;
+      n = Pl ;
+      p = P3 
       } ;
 
 }

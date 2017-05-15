@@ -1,42 +1,68 @@
 resource MiniResBar = open Prelude in {
 
 param
+  Gender = Masc | Fem | Neutr ;
   Number = Sg | Pl ;
-  Case = Nom | Acc ;
-  Person = Per1 | Per2 | Per3 ;
+  Case = Nom | Dat | Acc ;
+  Person = P1 | P2 | P3 ;
 
-  Agreement = Agr Number Person ;
+--  Agreement = Agr Number Person ;
 
-  VForm = Inf | PresSg Person | PresPl Person ;
+  VForm = Inf | Pres Number Person ;
 
 oper
-  Noun : Type = {s : Str} ;
+  Noun : Type = {s : Number => Case => Str ; g : Gender} ;
 
-  mkNoun : Str -> Noun = \sg -> {
-    s = sg
+  mkNoun : (sg,pl : Str) -> Gender -> Noun = \sg,pl,gen -> {
+    s = table { Sg => \\_ => sg ; Pl => \\_ => pl } ;
+    g = gen
     } ;
 
-  mkN : Str -> Noun = mkNoun ;
+  mkN = overload {
+    nkN : Str -> Noun = \sg -> mkNoun sg sg Neutr ;
+    nkN : (sg,pl : Str) -> Noun = \sg,pl -> mkNoun sg pl Neutr ;
+    nkN : Str -> Gender -> Noun = \sg,gen -> mkNoun sg sg gen ;
+    nkN : (sg,pl : Str) -> Gender -> Noun = mkNoun ;
+    } ;
 
-  ProperName : Type = {s : Str} ;
+  ProperName : Type = {s : Str ; g : Gender} ;
 
-  mkPN : Str -> ProperName = \s -> {s = s} ;
+  mkPN = overload {
+    mkPN : Str -> Gender -> ProperName = \pn,gen -> {s = pn ; g = gen} ;
+    mkPN : Str -> ProperName = \pn -> {s = pn ; g = Neutr} ;
+    } ;
 
-  Adjective : Type = {s : Str} ;
+  Adjective : Type = {s : Gender => Number => Case => Str ; base : Str} ;
 
-  mkA : Str -> Adjective = \s -> {s = s} ;
+  mkA : Str -> Adjective = \a -> {
+    s = table { Masc => table {
+		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
+		  Pl => table { _ => a + "n" }
+		  } ;
+		Fem => table {
+		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+		  Pl => table { _ => a + "n" }
+		  } ;
+		Neutr => table {
+		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+		  Pl => table { _ => a + "n" }
+		  }
+      } ;
+    base = a      
+    } ;
+    
 
   Verb : Type = {s : VForm => Str} ;
 
   mkVerb : (inf,pressg1,pressg2,pressg3,prespl1,prespl2,prespl3 : Str) -> Verb = \inf,pressg1,pressg2,pressg3,prespl1,prespl2,prespl3 -> {
     s = table {
       Inf => inf ;
-      PresSg P1 => pressg1 ;
-      PresSg P2 => pressg2 ;
-      PresSg P3 => pressg3 ;
-      PresPl P1 => prespl1 ;
-      PresPl P2 => prespl2 ;
-      PresPl P3 => prespl3
+      Pres Sg P1 => pressg1 ;
+      Pres Sg P2 => pressg2 ;
+      Pres Sg P3 => pressg3 ;
+      Pres Pl P1 => prespl1 ;
+      Pres Pl P2 => prespl2 ;
+      Pres Pl P3 => prespl3
       
       }
     } ;
@@ -44,7 +70,9 @@ oper
   smartVerb : Str -> Verb = \inf ->
     case inf of {
       i + "a" => mkVerb inf i (i + "st") (i + "t") inf (i + "t") (i + "an") ;
-      i + "n" => mkVerb inf i (i + "st") (i + "t") (i + "an") (i + "ts") inf
+      i + "n" => mkVerb inf i (i + "st") (i + "t") (i + "an") (i + "ts") inf ;
+      i + "m" => mkVerb inf i (i + "bst") (i + "bt") inf (i + "bts") inf ;
+      _ => mkVerb inf inf (inf + "st") (inf + "t") (inf + "an") (inf + "ts") inf
       } ;
  
   mkV = overload {
@@ -68,12 +96,12 @@ oper
   be_GVerb : GVerb = {
     s = table {
       Inf => "sein" ;
-      PresSg P1 => "bin" ;
-      PresSg P2 => "bist" ;
-      PresSg P3 => "is" ;
-      PresPl P1 => "san" ;
-      PresPl P2 => "saids";
-      PresPl P3 => "san"
+      Pres Sg P1 => "bin" ;
+      Pres Sg P2 => "bist" ;
+      Pres Sg P3 => "is" ;
+      Pres Pl P1 => "san" ;
+      Pres Pl P2 => "saids";
+      Pres Pl P3 => "san"
        } ;
      isAux = True
      } ;
