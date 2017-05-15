@@ -5,7 +5,8 @@ param
   Number = Sg | Pl ;
   Case = Nom | Dat | Acc ;
   Person = P1 | P2 | P3 ;
-
+  Definiteness = Def | Indef ;
+  
 --  Agreement = Agr Number Person ;
 
   VForm = Inf | Pres Number Person ;
@@ -32,21 +33,38 @@ oper
     mkPN : Str -> ProperName = \pn -> {s = pn ; g = Neutr} ;
     } ;
 
-  Adjective : Type = {s : Gender => Number => Case => Str ; base : Str} ;
+  Adjective : Type = {s : Definiteness => Gender => Number => Case => Str ; base : Str} ;
 
   mkA : Str -> Adjective = \a -> {
-    s = table { Masc => table {
-		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
-		  Pl => table { _ => a + "n" }
-		  } ;
-		Fem => table {
-		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-		  Pl => table { _ => a + "n" }
-		  } ;
-		Neutr => table {
-		  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-		  Pl => table { _ => a + "n" }
-		  }
+    s = table {
+      Def => table {
+	Masc => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
+	  Pl => table { _ => a + "n" }
+	  } ;
+	Fem => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+	  Pl => table { _ => a + "n" }
+	  } ;
+	Neutr => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+	  Pl => table { _ => a + "n" }
+	  }
+	} ;
+      Indef => table {
+	Masc => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
+	  Pl => table { _ => a + "e" }
+	  } ;
+	Fem => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+	  Pl => table { _ => a + "e" }
+	  } ;
+	Neutr => table {
+	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+	  Pl => table { _ => a + "e" }
+	  }
+	}
       } ;
     base = a      
     } ;

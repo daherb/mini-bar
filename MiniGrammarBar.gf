@@ -10,10 +10,10 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     Cl = {s : Bool => Str} ;
     VP = {verb : GVerb ; compl : Str} ;
     AP = Adjective ;
-    CN = Noun ;
+    CN = {s : Definiteness => Number => Case => Str ; g : Gender};
     NP = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
     Pron = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
-    Det = {s : Gender => Case => Str ; n : Number } ;
+    Det = {s : Gender => Case => Str ; n : Number ; d : Definiteness } ;
     Conj = {s : Str} ;
     Prep = {s : Str} ;
     V = Verb ;
@@ -71,7 +71,7 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
       vp ** {compl = adv.s ++ vp.compl} ;
       
     DetCN det cn = {
-      s = \\c => det.s ! cn.g ! c ++ cn.s ! det.n ! c;
+      s = \\c => det.s ! cn.g ! c ++ cn.s ! det.d ! det.n ! c;
       g = cn.g ;
       n = det.n ;
       p = P3
@@ -88,30 +88,51 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
       p ;
     
     MassNP cn = {
-      s = \\c => cn.s ! Sg ! c;
+      s = \\c => cn.s ! Indef ! Sg ! c;
       g = cn.g ;
       n = Sg ;
       p = P3
       } ;
     
-    a_Det = {s = \\g,c => case <g,c> of {
-	       <_,Nom> => "a" ;
-	       <Masc|Neutr,Dat> => "an" ;
-	       <Fem,Dat> => "ara" ;
-	       <Masc,Acc> => "an" ;
-	       <Fem|Neutr,Acc> => "a"		
-	       }; n = Sg} ;
-    aPl_Det = {s = \\_,_ => "" ; n = Pl} ;
-    the_Det = {s = table { Masc => table { Nom => "da"; Dat => "am" ; Acc => "an" } ;
-			   Fem => table { Nom => "d" ; Dat => "da" ; Acc => "d" } ;
-			   Neutr => table { Nom => "as" ; Dat => "am" ; Acc => "as" }
-		 } ; n = Sg} ;
-    thePl_Det = {s = \\_ => table { Nom => "d" ; Dat => "de" ; Acc => "d" } ; n = Pl} ;
+    a_Det = {
+      s = \\g,c => case <g,c> of {
+	<_,Nom> => "a" ;
+	<Masc|Neutr,Dat> => "an" ;
+	<Fem,Dat> => "ara" ;
+	<Masc,Acc> => "an" ;
+	<Fem|Neutr,Acc> => "a"		
+	};
+      n = Sg ;
+      d = Indef 
+      } ;
+
+    aPl_Det = {
+      s = \\_,_ => "" ;
+      n = Pl ;
+      d = Indef
+      } ;
+
+    the_Det = {
+      s = table {
+	Masc => table { Nom => "da"; Dat => "am" ; Acc => "an" } ;
+	Fem => table { Nom => "d" ; Dat => "da" ; Acc => "d" } ;
+	Neutr => table { Nom => "as" ; Dat => "am" ; Acc => "as" }
+	} ;
+      n = Sg ;
+      d = Def
+      } ;
+
+    thePl_Det = {
+      s = \\_ => table { Nom => "d" ; Dat => "de" ; Acc => "d" } ;
+      n = Pl ;
+      d = Def 
+      } ;
+
     UseN n =
-      n ;
+      { s = \\_ => n.s ; g = n.g } ;
 
     AdjCN ap cn = {
-      s = \\n,c => ap.s ! cn.g ! n ! c ++ cn.s ! n ! c ;
+      s = \\d,n,c => ap.s ! d ! cn.g ! n ! c ++ cn.s ! d ! n ! c ;
       g = cn.g
       } ;
 
@@ -128,10 +149,15 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
 
     or_Conj = {s = "oda"} ;
 
-    every_Det = {s = table { Masc => table { Nom => "jeda" ; Dat => "jem" ; Acc => "jedn" } ;
-			     Fem => table { Nom => "jede" ;  Dat => "jeda" ; Acc => "jede" } ;
-			     Neutr => table { Nom => "jeds" ; Dat => "jem" ; Acc => "jeds" }
-		   }; n = Sg} ;
+    every_Det = {
+      s = table {
+	Masc => table { Nom => "jeda" ; Dat => "jem" ; Acc => "jedn" } ;
+	Fem => table { Nom => "jede" ;  Dat => "jeda" ; Acc => "jede" } ;
+	Neutr => table { Nom => "jeds" ; Dat => "jem" ; Acc => "jeds" }
+	};
+      n = Sg ;
+      d = Def ;
+      } ;
 
     in_Prep = {s = "i"} ;
 
