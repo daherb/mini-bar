@@ -36,35 +36,41 @@ oper
   Adjective : Type = {s : Definiteness => Gender => Number => Case => Str ; base : Str} ;
 
   mkA : Str -> Adjective = \a -> {
-    s = table {
-      Def => table {
-	Masc => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
-	  Pl => table { _ => a + "n" }
+    s =
+      let fix : Str * Str * Str = case a of {
+	    _ + "a" => <"n","r","a"> ;
+	    _ => <"","","">
+	    }
+      in
+      table {
+	Def => table {
+	  Masc => table {
+	    Sg => table { Nom => a + fix.p1 + "e" ; Dat => a + "na" ; Acc => a + "na" } ;
+	    Pl => table { _ => a + "n" }
+	    } ;
+	  Fem => table {
+	    Sg => table { Nom => a + fix.p1 + "e" ; Dat => a + "n" + fix.p3 ; Acc => a + fix.p1 + "e" } ;
+	    Pl => table { _ => a + "n" }
+	    } ;
+	  Neutr => table {
+	    Sg => table { Nom => a + fix.p1 + "e" ; Dat => a + "na" ; Acc => a + fix.p1 + "e" } ;
+	    Pl => table { _ => a + "n" }
+	    }
 	  } ;
-	Fem => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-	  Pl => table { _ => a + "n" }
-	  } ;
-	Neutr => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-	  Pl => table { _ => a + "n" }
+	Indef => table {
+	  Masc => table {
+	    Sg => table { Nom => a + fix.p2 + "a" ; Dat => a + "n" ; Acc => a + "n" } ;
+	    Pl => table { _ => a + fix.p1 + "e" }
+	    } ;
+	  Fem => table {
+	    Sg => table { Nom => a + fix.p1 + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
+	    Pl => table { _ => a + fix.p1 + "e" }
+	    } ;
+	  Neutr => table {
+	    Sg => table { Nom => a + fix.p1 + "es" ; Dat => a + "n" ; Acc => a + "e" } ;
+	    Pl => table { _ => a + fix.p1 + "e" }
+	    }
 	  }
-	} ;
-      Indef => table {
-	Masc => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "n" } ;
-	  Pl => table { _ => a + "e" }
-	  } ;
-	Fem => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-	  Pl => table { _ => a + "e" }
-	  } ;
-	Neutr => table {
-	  Sg => table { Nom => a + "e" ; Dat => a + "n" ; Acc => a + "e" } ;
-	  Pl => table { _ => a + "e" }
-	  }
-	}
       } ;
     base = a      
     } ;
