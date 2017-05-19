@@ -12,20 +12,27 @@ param
   VForm = Inf | Pres Number Person ;
 
 oper
-  Noun : Type = {s : Number => Case => Str ; g : Gender} ;
+  Noun : Type = {s : Number => Case => Str ; g : Gender ; massable : Bool } ;
 
-  mkNoun : (sg,pl : Str) -> Gender -> Noun = \sg,pl,gen -> {
+  mkNoun : (sg,pl : Str) -> Gender -> Bool -> Noun = \sg,pl,gen,mass -> {
     s = table { Sg => \\_ => sg ; Pl => \\_ => pl } ;
-    g = gen
+    g = gen ;
+    massable = mass
     } ;
 
   mkN = overload {
-    nkN : Str -> Noun = \sg -> mkNoun sg sg Neutr ;
-    nkN : (sg,pl : Str) -> Noun = \sg,pl -> mkNoun sg pl Neutr ;
-    nkN : Str -> Gender -> Noun = \sg,gen -> mkNoun sg sg gen ;
-    nkN : (sg,pl : Str) -> Gender -> Noun = mkNoun ;
+    nkN : Str -> Noun = \sg -> mkNoun sg sg Neutr False;
+    nkN : (sg,pl : Str) -> Noun = \sg,pl -> mkNoun sg pl Neutr False;
+    nkN : Str -> Gender -> Noun = \sg,gen -> mkNoun sg sg gen False;
+    nkN : (sg,pl : Str) -> Gender -> Noun = \sg,pl,gen -> mkNoun sg pl gen False;
+    nkN : (sg,pl : Str) -> Gender -> Bool -> Noun = \sg,pl,gen,mass -> mkNoun sg pl gen mass;
     } ;
-
+  
+  mkMassN = overload {
+    mkMassN : Str ->           Noun = \sg -> mkNoun sg nonExist Neutr True;
+    mkMassN : Str -> Gender -> Noun = \sg,g -> mkNoun sg nonExist g True;
+    } ;
+  
   ProperName : Type = {s : Str ; g : Gender} ;
 
   mkPN = overload {

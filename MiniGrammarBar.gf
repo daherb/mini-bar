@@ -10,7 +10,7 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     Cl = {s : Bool => Str} ;
     VP = {verb : GVerb ; compl : Str ; isAP : Bool } ;
     AP = Adjective ;
-    CN = {s : Definiteness => Number => Case => Str ; g : Gender};
+    CN = {s : Definiteness => Number => Case => Str ; g : Gender ; massable : Bool};
     NP = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
     Pron = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
     Det = {s : Gender => Case => Str ; n : Number ; d : Definiteness } ;
@@ -74,12 +74,13 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     UsePron p =
       p ;
     
-    MassNP cn = {
-      s = \\c => cn.s ! Indef ! Sg ! c;
-      g = cn.g ;
-      n = Sg ;
-      p = P3
-      } ;
+    MassNP cn =
+      {
+	s = \\c => case cn.massable of { True => cn.s ! Indef ! Sg ! c ;  False => nonExist };
+	g = cn.g ;
+	n = Sg ;
+	p = P3
+	} ;
     
     a_Det = {
       s = \\g,c => case <g,c> of {
@@ -116,11 +117,12 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
       } ;
 
     UseN n =
-      { s = \\_ => n.s ; g = n.g } ;
+      { s = \\_ => n.s ; g = n.g ; massable = n.massable } ;
 
     AdjCN ap cn = {
       s = \\d,n,c => ap.s ! d ! cn.g ! n ! c ++ cn.s ! d ! n ! c ;
-      g = cn.g
+      g = cn.g ;
+      massable = cn.massable
       } ;
 
     PositA a = a ;
