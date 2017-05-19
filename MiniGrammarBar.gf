@@ -8,7 +8,7 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     
     S  = {s : Str} ;
     Cl = {s : Bool => Str} ;
-    VP = {verb : GVerb ; compl : Str} ;
+    VP = {verb : GVerb ; compl : Str ; isAP : Bool } ;
     AP = Adjective ;
     CN = {s : Definiteness => Number => Case => Str ; g : Gender};
     NP = {s : Case => Str ; g : Gender ; n : Number ; p : Person } ;
@@ -33,22 +33,25 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
 
     PredVP np vp =
       { s = \\b 
-	  => np.s ! Nom ++ vp.verb.s ! Pres np.n np.p ++ vp.compl ++ case b of { True => "" ; False => "ned" } ;
+	  => np.s ! Nom ++ vp.verb.s ! Pres np.n np.p ++ case <vp.isAP,b> of { <True,True> | <False,_> => "" ; <True,False> => "ned" } ++ vp.compl ++ case <vp.isAP,b> of { <False,True> | <True,_> => "" ; <False,False> => "ned" } ;
       } ;
     
     UseV v = {
       verb = verb2gverb v ;
-      compl = []
+      compl = [] ;
+      isAP = False ;
       } ;
     
     ComplV2 v2 np = {
       verb = verb2gverb v2 ;
        compl = v2.c ++ np.s ! Acc
+      isAP = False
       } ;
     
     UseAP ap = {
       verb = be_GVerb ;
-      compl = ap.base
+      compl = ap.base ;
+      isAP = True
       } ;
     
     AdvVP vp adv =
