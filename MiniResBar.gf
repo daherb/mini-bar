@@ -100,10 +100,12 @@ oper
 
   smartVerb : Str -> Verb = \inf ->
     case inf of {
-      i + "a" => mkVerb inf i (i + "st") (i + "t") inf (i + "t") (i + "an") ;
+      i + "a" => mkVerb inf i (i + "st") (i + "t") (inf + "n") (i + "ts") (i + "an") ;
+      i + "echn" => mkVerb inf (i + "ech") (i + "ichst") (i + "icht") inf (i + "echts") inf ;
+      i + "hn" => mkVerb inf (i + "h") (i + "hst") (i + "ht") inf (i + "hts") inf ;
       i + "n" => mkVerb inf i (i + "st") (i + "t") (i + "an") (i + "ts") inf ;
-      i + "m" => mkVerb inf i (i + "bst") (i + "bt") inf (i + "bts") inf ;
-      _ => mkVerb inf inf (inf + "st") (inf + "t") (inf + "an") (inf + "ts") inf
+      i + "m" => mkVerb inf (i + "b") (i + "bst") (i + "bt") inf (i + "bts") inf ;
+      _ => mkVerb inf inf (inf + "st") (inf + "t") (inf + "an") (inf + "ts") (inf + "an")
       } ;
  
   mkV = overload {
