@@ -111,13 +111,16 @@ oper
     mkV : (inf,pressg1,pressg2,pressg3,prespl1,prespl2,prespl3 : Str) -> Verb = mkVerb ;
     } ;
 
-  Verb2 : Type = Verb ** {c : Str} ;
+  Verb2 : Type = Verb ** {compl : Str ; c : Case} ;
 
   mkV2 = overload {
-    mkV2 : Str         -> Verb2 = \s   -> mkV s ** {c = []} ;
-    mkV2 : Str  -> Str -> Verb2 = \s,p -> mkV s ** {c = p} ;
-    mkV2 : Verb        -> Verb2 = \v   -> v ** {c = []} ;
-    mkV2 : Verb -> Str -> Verb2 = \v,p -> v ** {c = p} ;
+    mkV2 : Str                  -> Verb2 = \s     -> mkV s ** {compl = [] ; c = Acc } ;
+    mkV2 : Str  -> Case         -> Verb2 = \s,c   -> mkV s ** {compl = [] ; c = c } ;
+    mkV2 : Str  -> Str          -> Verb2 = \s,p   -> mkV s ** {compl = p ; c = Acc } ;
+    mkV2 : Verb                 -> Verb2 = \v     -> v     ** {compl = [] ; c = Acc } ;
+    mkV2 : Verb -> Case         -> Verb2 = \v,c   -> v     ** {compl = [] ; c = c } ;
+    mkV2 : Verb -> Str  -> Case -> Verb2 = \v,p,c -> v     ** {compl = p ; c = c } ;
+    mkV2 : Verb -> Str          -> Verb2 = \v,p   -> v     ** {compl = p ; c = Acc } ;
     } ;
 
   Adverb : Type = {s : Str} ;

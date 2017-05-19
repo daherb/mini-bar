@@ -44,7 +44,7 @@ concrete MiniGrammarBar of MiniGrammar = open MiniResBar, Prelude in {
     
     ComplV2 v2 np = {
       verb = verb2gverb v2 ;
-       compl = v2.c ++ np.s ! Acc
+      compl = v2.compl ++ np.s ! v2.c ;
       isAP = False
       } ;
     
